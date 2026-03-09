@@ -37,29 +37,82 @@ format_all_hab_data_long <- function(tmh_data_formatting) {
     separate(metric, c('hab', 'unit', 'lifestage'), "_") 
 }
 
-all_existing_and_tmh_data_fun <- function(species) {
-  if(species == "fr") {
-    all_existing_and_tmh_data <- readRDS('data-raw/R2R_TMH_habitat_inputs/all_habitat_data_for_tmh_inputs_all_runs.rdata') |> 
-      filter(run == "Fall Run") |> 
-      format_all_hab_data_long()
+# extent definitions - currently only applicable for winter run:
+# 1. `action_5_upper_sac_tmh...` -- Upper Sac - redding to redbluff and above dam extent mapped by Yoshiyama 
+# 2. `action_5_upper_sac_pit_tmh...` -- Upper Sac (above def) + Pit River
+# 3. `action_5_upper_sac_mccloud_tmh...` -- Upper Sac (above def) + McCloud River
+# 4. `action_5_upper_sac_pit_mccloud_tmh...` -- Upper Sac (above def) + Pit River + McCloud River
+all_existing_and_tmh_data_fun <- function(species, area, extent) {
+  if(area == "Shasta") {
+    if(species == "fr") {
+      print("loading tmh inputs for fr Shasta....")
+      all_existing_and_tmh_data <- readRDS('data-raw/R2R_TMH_habitat_inputs/all_habitat_data_for_tmh_inputs_all_runs_with_upper_sac.rdata') |> 
+        filter(run == "Fall Run") |> 
+        format_all_hab_data_long()
+    } else {
+      print("loading tmh inputs for winter and spring Shasta....")
+      all_existing_and_tmh_data_raw <- readRDS('data-raw/R2R_TMH_habitat_inputs/all_habitat_data_for_tmh_inputs_all_runs_with_upper_sac.rdata') |> 
+        filter(run == "Winter and Spring Run") |> 
+        format_all_hab_data_long() 
+      if(extent == 1) {
+        all_existing_and_tmh_data <- all_existing_and_tmh_data_raw |> 
+          filter(!(watershed %in% c("McCloud River", "Pit River"))) 
+      } else if (extent == 2) {
+        all_existing_and_tmh_data <- all_existing_and_tmh_data_raw  |> 
+          filter(!(watershed %in% c("McCloud River", "Upper Sacramento River", "Pit River"))) |> 
+          bind_rows(
+            all_existing_and_tmh_data_raw  |> 
+              filter(watershed %in% c("Upper Sacramento River", "Pit River"))  |> 
+              group_by(run, modeled_for, hab, unit, lifestage) |> 
+              summarise(value = sum(value, na.rm = TRUE), .groups = "drop") |> 
+              mutate(watershed = "Upper Sacramento River")
+          )
+      } else if (extent == 3) {
+        all_existing_and_tmh_data <- all_existing_and_tmh_data_raw  |> 
+          filter(!(watershed %in% c("McCloud River", "Upper Sacramento River", "Pit River"))) |> 
+          bind_rows(
+            all_existing_and_tmh_data_raw  |> 
+              filter(watershed %in% c("Upper Sacramento River", "McCloud River"))  |> 
+              group_by(run, modeled_for, hab, unit, lifestage) |> 
+              summarise(value = sum(value, na.rm = TRUE), .groups = "drop") |> 
+              mutate(watershed = "Upper Sacramento River")
+          )
+      } else if (extent == 4) {
+        all_existing_and_tmh_data <- all_existing_and_tmh_data_raw  |> 
+          filter(!(watershed %in% c("McCloud River", "Upper Sacramento River", "Pit River"))) |> 
+          bind_rows(
+            all_existing_and_tmh_data_raw  |> 
+              filter(watershed %in% c("Upper Sacramento River", "McCloud River", "Pit River"))  |> 
+              group_by(run, modeled_for, hab, unit, lifestage) |> 
+              summarise(value = sum(value, na.rm = TRUE), .groups = "drop") |> 
+              mutate(watershed = "Upper Sacramento River")
+          )
+      }
+    }
   } else {
-    all_existing_and_tmh_data <- readRDS('data-raw/R2R_TMH_habitat_inputs/all_habitat_data_for_tmh_inputs_all_runs.rdata') |> 
-      filter(run == "Winter and Spring Run") |> 
-      format_all_hab_data_long()
+    if(species == "fr") {
+      all_existing_and_tmh_data <- readRDS('data-raw/R2R_TMH_habitat_inputs/all_habitat_data_for_tmh_inputs_all_runs.rdata') |> 
+        filter(run == "Fall Run") |> 
+        format_all_hab_data_long()
+    } else {
+      all_existing_and_tmh_data <- readRDS('data-raw/R2R_TMH_habitat_inputs/all_habitat_data_for_tmh_inputs_all_runs.rdata') |> 
+        filter(run == "Winter and Spring Run") |> 
+        format_all_hab_data_long()
+    }
   }
 }
 
 ## spawning ----------------------------------------------------------------
-spawn_tmh_processing <- function(watersheds, species, calsim_run) {
+spawn_tmh_processing <- function(watersheds, species, calsim_run, area, extent) {
   
-  all_existing_and_tmh_data <- all_existing_and_tmh_data_fun(species)
+  all_existing_and_tmh_data <- all_existing_and_tmh_data_fun(species, area, extent)
   
   r_to_r_tmh_spawn <- switch(species, 
                              "fr" = DSMhabitat::fr_spawn[[calsim_run]],
                              "sr" = DSMhabitat::sr_spawn[[calsim_run]],
                              "wr" = DSMhabitat::wr_spawn[[calsim_run]])
   
- for(i in 1:length(watersheds)) {
+  for(i in 1:length(watersheds)) {
     ws <- watersheds[i]
     
     max_hab_acres <- all_existing_and_tmh_data |> 
@@ -92,9 +145,9 @@ spawn_tmh_processing <- function(watersheds, species, calsim_run) {
 }
 
 ## In channel and Fry Rearing ----------------------------------------------------------------
-rearing_tmh_processing <- function(watersheds, species, calsim_run) {
+rearing_tmh_processing <- function(watersheds, species, calsim_run, area, extent) {
   
-  all_existing_and_tmh_data <- all_existing_and_tmh_data_fun(species)
+  all_existing_and_tmh_data <- all_existing_and_tmh_data_fun(species, area, extent)
   
   r_to_r_tmh_juv <- switch(species, 
                            "fr" = DSMhabitat::fr_juv[[calsim_run]],
@@ -141,9 +194,9 @@ rearing_tmh_processing <- function(watersheds, species, calsim_run) {
 }
 
 ## floodplain  ----------------------------------------------------------------
-floodplain_tmh_processing <- function(watersheds, species, calsim_run) {
+floodplain_tmh_processing <- function(watersheds, species, calsim_run, area, extent) {
   
-  all_existing_and_tmh_data <- all_existing_and_tmh_data_fun(species)
+  all_existing_and_tmh_data <- all_existing_and_tmh_data_fun(species, area, extent)
   
   r_to_r_tmh_flood <- switch(species, 
                              "fr" = DSMhabitat::fr_fp[[calsim_run]],
@@ -185,8 +238,8 @@ delta_tmh_processing <- function(watersheds = c('North Delta', 'South Delta')) {
   r_to_r_tmh_delta <- DSMhabitat::delta_habitat$sit_habitat
   
   for(i in 1:length(watersheds)) {
-      ws <-watersheds[i]
-     habitat = "rear"
+    ws <-watersheds[i]
+    habitat = "rear"
     
     # see: TMH methodology for calcs 
     max_hab_df = data.frame(watershed = c("North Delta", "South Delta"),
@@ -244,12 +297,12 @@ existing_flow_cfs <- function(habitat_type, watershed_input, bypass = FALSE, spe
   quantification_mode <- subset(DSMhabitat::watershed_methods, 
                                 watershed_name == watershed_input, instream, drop = TRUE)
   if (watershed_input %in% c('Upper Sacramento River', 'Upper-mid Sacramento River',
-                       'Lower-mid Sacramento River1', 'Lower-mid Sacramento River2', 'Lower Sacramento River') & 
+                             'Lower-mid Sacramento River1', 'Lower-mid Sacramento River2', 'Lower Sacramento River') & 
       habitat_type %in% c("spawning", "rearing")) {
     if (habitat_type == c("spawning")) {
       if (species %in% c("fr", "sr")) {
         # pull from flow table for now, should clean up
-        # use uper_sac_ACID_boards_in DF because that is majority of fr spawn season
+        # use uper_sac_ACID_boards_in DF because ttmh_comparison_plothat is majority of fr spawn season
         flow = 4500
       }
       if (species == "wr") {
@@ -265,13 +318,13 @@ existing_flow_cfs <- function(habitat_type, watershed_input, bypass = FALSE, spe
       if (watershed_input %in% c('Lower-mid Sacramento River1', 'Lower-mid Sacramento River2')) {
         flow = 2000
       } else {
-      watershed_name <- tolower(gsub(pattern = "-| ", replacement = "_", x = watershed_input))
-      watershed_rda_name <- paste(watershed_name, "instream", sep = "_")
-      df <- as.data.frame(do.call(`::`, list(pkg = "DSMhabitat", name = watershed_rda_name)))
-      df_na_rm <- df[!is.na(df[, "rearing_sq_meters"]), ]
-      max_hab <- max(df_na_rm[, "rearing_sq_meters"])
-      df_na_rm[, "rearing_sq_meters"] <- round(df_na_rm[, "rearing_sq_meters"])
-      flow <- df_na_rm[df_na_rm[, "rearing_sq_meters"] == round(max_hab), ][, "flow_cfs"]
+        watershed_name <- tolower(gsub(pattern = "-| ", replacement = "_", x = watershed_input))
+        watershed_rda_name <- paste(watershed_name, "instream", sep = "_")
+        df <- as.data.frame(do.call(`::`, list(pkg = "DSMhabitat", name = watershed_rda_name)))
+        df_na_rm <- df[!is.na(df[, "rearing_sq_meters"]), ]
+        max_hab <- max(df_na_rm[, "rearing_sq_meters"])
+        df_na_rm[, "rearing_sq_meters"] <- round(df_na_rm[, "rearing_sq_meters"])
+        flow <- df_na_rm[df_na_rm[, "rearing_sq_meters"] == round(max_hab), ][, "flow_cfs"]
       }
     }
   } else if (habitat_type %in% c("spawning", "rearing")) {
@@ -301,6 +354,8 @@ existing_flow_cfs <- function(habitat_type, watershed_input, bypass = FALSE, spe
       flow = 200
     }
   } else if(habitat_type == "flood") {
+    # TODO: this is a hacky fix, unsure about it... MW 3/4/26
+    if(watershed_input %in% c("Lower-mid Sacramento River1", "Lower-mid Sacramento River2")) {watershed_input <- "Lower-mid Sacramento River"}
     flood = flow_df |> 
       filter(date >= as_date("1980-01-01")) |> 
       select(watershed_input, date) |> 
@@ -376,15 +431,15 @@ existing_acres_fun <- function(watershed_input, habitat_type, selected_species, 
                                                                                          month = median(spawning_months(selected_species)))))
     
     if((selected_species == "wr" & 
-       habitat_type == "rearing" & 
-       !(watershed_input %in% c('Upper Sacramento River', 'Upper-mid Sacramento River',
-                            'Lower-mid Sacramento River', 'Battle Creek')))) {
-        # use fall run as proxy for most watersheds: 
-        flow <- existing_flow_cfs(habitat_type, watershed_input, species = "fr", life_stage = selected_life_stage, calsim_run = calsim_run)
-        acres <- switch(selected_life_stage, 
+        habitat_type == "rearing" & 
+        !(watershed_input %in% c('Upper Sacramento River', 'Upper-mid Sacramento River',
+                                 'Lower-mid Sacramento River', 'Battle Creek')))) {
+      # use fall run as proxy for most watersheds: 
+      flow <- existing_flow_cfs(habitat_type, watershed_input, species = "fr", life_stage = selected_life_stage, calsim_run = calsim_run)
+      acres <- switch(selected_life_stage, 
                       "juv" = square_meters_to_acres(DSMhabitat::set_instream_habitat(watershed = watershed_input, species = 'fr', life_stage = "juv", flow = flow)),
                       "fry" = square_meters_to_acres(DSMhabitat::set_instream_habitat(watershed = watershed_input, species = 'fr', life_stage = "fry", flow = flow))
-        )
+      )
     }
   }
   modeling_in_suitable_area <- c("Antelope Creek", "Battle Creek", "Bear Creek", 
@@ -399,40 +454,85 @@ existing_acres_fun <- function(watershed_input, habitat_type, selected_species, 
 }
 
 # TMH Plots: 
-tmh_comparison_plot <- function(tmh_data, sit_habitat, hab_type) {
+tmh_comparison_plot <- function(
+    tmh_data,
+    baseline,
+    hab_type,
+    legend_labels = c(
+      baseline = "Baseline",
+      r_to_r_max_habitat = "R2R max habitat"
+    ),
+    legend_colors = NULL,
+    title = NULL
+) {
   
-  year = switch(hab_type, 
-                "spawn" = c(1979:2000),
-                "juv" = c(1980:2000),
-                "fry" = c(1980:2000),
-                "flood" = c(1980:2000)
+  year <- switch(
+    hab_type,
+    "spawn" = 1979:2000,
+    "juv"   = 1980:2000,
+    "fry"   = 1980:2000,
+    "flood" = 1980:2000,
+    stop("hab_type must be one of: spawn, juv, fry, flood")
   )
   
-  r_to_r_max_habitat <- tmh_data |> 
+  r_to_r_max_habitat <- tmh_data |>
     DSMhabitat::square_meters_to_acres()
   
-  sit_habitat <- sit_habitat |> DSMhabitat::square_meters_to_acres()
+  baseline <- baseline |>
+    DSMhabitat::square_meters_to_acres()
   
-  plot <- expand_grid(
-    watershed = factor(DSMscenario::watershed_labels, 
-                       levels = DSMscenario::watershed_labels),
+  plot_df <- tidyr::expand_grid(
+    watershed = factor(
+      DSMscenario::watershed_labels,
+      levels = DSMscenario::watershed_labels
+    ),
     month = 1:12,
-    year = year) |> 
-    arrange(year, month, watershed) |> 
+    year = year
+  ) |>
+    arrange(year, month, watershed) |>
     mutate(
-      sit_habitat = as.vector(sit_habitat),
-      r_to_r_max_habitat = as.vector(r_to_r_max_habitat)) 
+      baseline = as.vector(baseline),
+      r_to_r_max_habitat = as.vector(r_to_r_max_habitat)
+    ) |>
+    transmute(
+      watershed,
+      date = lubridate::ymd(paste(year, month, 1)),
+      baseline,
+      r_to_r_max_habitat
+    ) |>
+    tidyr::pivot_longer(
+      cols = c(baseline, r_to_r_max_habitat),
+      names_to = "version",
+      values_to = "acres"
+    )
   
-  plot |> 
-    transmute(watershed, date = lubridate::ymd(paste(year, month, 1)), 
-              sit_habitat, r_to_r_max_habitat) |> 
-    gather(version, acres, -watershed, -date)  |> 
-    ggplot(aes(date, acres, color = version)) +
-    geom_line(alpha = .75) + 
-    facet_wrap(~watershed, scales = 'free_y') + 
-    theme_minimal() + 
-    theme(legend.position="top", 
-          legend.title = element_blank())
+  # Keep legend order controlled by legend_labels
+  plot_df <- plot_df |>
+    mutate(version = factor(version, levels = names(legend_labels)))
+  
+  p <- ggplot(plot_df, aes(date, acres, color = version)) +
+    geom_line(alpha = 0.75) +
+    facet_wrap(~watershed, scales = "free_y") +
+    theme_minimal() +
+    labs(title = title, color = NULL) +  
+    theme(
+      legend.position = "top"
+    )
+  
+  # Apply labels (and optional colors)
+  if (!is.null(legend_colors)) {
+    p <- p + scale_color_manual(
+      breaks = names(legend_labels),
+      labels = unname(legend_labels),
+      values = legend_colors
+    )
+  } else {
+    p <- p + scale_color_discrete(
+      breaks = names(legend_labels),
+      labels = unname(legend_labels)
+    )
+  }
+  
+  p
 }
-
 

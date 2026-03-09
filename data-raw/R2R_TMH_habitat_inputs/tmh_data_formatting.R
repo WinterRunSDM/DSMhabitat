@@ -6,8 +6,9 @@ library(tidyverse)
 
 #run <- 'Fall Run' #'Spring Run' 'Winter Run'
 run <- 'Spring Run'
+area = 'Shasta'
 
-tmh_data_format <- function(run) {
+tmh_data_format <- function(run, area) {
   
   source('data-raw/R2R_TMH_habitat_inputs/tmh_helper_functions.R')
   
@@ -22,8 +23,14 @@ tmh_data_format <- function(run) {
   rearing_perc_suitable_4_8 <- 0.195
   
   # url <- 'https://docs.google.com/spreadsheets/d/1-3WZAcOzrk5ugZq4CAYK1LRLP0005NmjwpifNQHZ_iA/edit#gid=0'
+  if(area == "Shasta") {
+    # this adds Pit and McCloud as seperate areas rather than being part of Upper Sacramento River
+    gradients_raw <- readxl::read_excel('data-raw/R2R_TMH_habitat_inputs/River Length Summary.xlsx', sheet = "Shasta Watershed Summary Table") 
+  } else {
+    gradients_raw <- readxl::read_excel('data-raw/R2R_TMH_habitat_inputs/River Length Summary.xlsx', sheet = "Watershed Summary Table") 
+  }
   
-  gradients <- readxl::read_excel('data-raw/R2R_TMH_habitat_inputs/River Length Summary.xlsx', sheet = "Watershed Summary Table") |> 
+  gradients <- gradients_raw |> 
     janitor::clean_names() |> 
     fill(watershed) |> 
     filter(!is.na(river)) |> 
@@ -123,7 +130,7 @@ tmh_data_format <- function(run) {
     total_acres <- all_below_dam_acres |> ungroup() |> 
       mutate(river = ifelse(grepl("San Joaquin River", river), "San Joaquin River", river)) |> 
       select(-mean_channel_width, -mean_inflection_width) |> 
-      left_join(above_dam_acres |> ungroup() |>  
+      full_join(above_dam_acres |> ungroup() |>  
                   mutate(river = ifelse(grepl("San Joaquin River", river), "San Joaquin River", river)) |> 
                   select(-c(mean_channel_width, mean_inflection_width))
       ) |>  
@@ -216,13 +223,17 @@ tmh_data_format <- function(run) {
 
 # format_all_data ---------------------------------------------------------
 
-fall_run_tmh <- tmh_data_format("Fall Run") |> 
+fall_run_tmh <- tmh_data_format("Fall Run", "Shasta") |> 
   mutate(run = "Fall Run")
 
-spring_and_winter_tmh <- tmh_data_format("Spring Run") |> 
+spring_and_winter_tmh <- tmh_data_format("Spring Run", "Shasta") |> 
   mutate(run = "Winter and Spring Run")
 
 all_max_habitat <- fall_run_tmh |> 
   bind_rows(spring_and_winter_tmh)
 
-saveRDS(all_max_habitat, "data-raw/R2R_TMH_habitat_inputs/all_habitat_data_for_tmh_inputs_all_runs.rdata")
+if (area == "Shasta") {
+  saveRDS(all_max_habitat |> mutate(modeled_for = "Shasta SDM"), "data-raw/R2R_TMH_habitat_inputs/all_habitat_data_for_tmh_inputs_all_runs_with_upper_sac.rdata")
+} else {
+  saveRDS(all_max_habitat, "data-raw/R2R_TMH_habitat_inputs/all_habitat_data_for_tmh_inputs_all_runs.rdata")
+}
