@@ -355,7 +355,7 @@ existing_flow_cfs <- function(habitat_type, watershed_input, bypass = FALSE, spe
     }
   } else if(habitat_type == "flood") {
     # TODO: this is a hacky fix, unsure about it... MW 3/4/26
-    if(str_detect(calsim_run, "action_%") & watershed_input %in% c("Lower-mid Sacramento River1", "Lower-mid Sacramento River2")) {watershed_input <- "Lower-mid Sacramento River"}
+    if(str_detect(calsim_run, "action_5") & watershed_input %in% c("Lower-mid Sacramento River1", "Lower-mid Sacramento River2")) {watershed_input <- "Lower-mid Sacramento River"}
     flood = flow_df |> 
       filter(date >= as_date("1980-01-01")) |> 
       select(watershed_input, date) |> 
