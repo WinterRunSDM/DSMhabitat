@@ -466,7 +466,8 @@ wr_spawn_action_5_bc_5 <- generate_wr_spawn('action_5', scenario = "bc_5")
 wr_spawn <- list(biop_2008_2009 = wr_spawn_2008_2009,
                  biop_itp_2018_2019 = wr_spawn_2018_2019,
                  run_of_river = wr_spawn_run_of_river,
-                 action_5 = wr_spawn_action_5)
+                 action_5 = wr_spawn_action_5,
+                 action_5_bc_5 = wr_spawn_action_5_bc_5)
 # because this is the first script run in update_data.R, we don't need it to be a modify List
 # wr_spawn <- modifyList(DSMhabitat::wr_spawn, list(biop_2008_2009 = wr_spawn_2008_2009,
 #                                               biop_itp_2018_2019 = wr_spawn_2018_2019,
