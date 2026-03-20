@@ -1,7 +1,7 @@
 library(tidyverse)
 
+# Update to add additional habitat projects -------------------------------
 # This script adds Battle Creek habitat improvement projects to the data object 
-
 source(here::here("data-raw", "battle_creek_habitat", "helper-functions.R"))
 
 # Battle Creek habitat improvements for Lower Battle Creek
@@ -26,9 +26,9 @@ project_hab_added <- habitat_projects |>
 # Battle Creek because floodplain doesn't start getting activated until 1473 cfs. For now
 # I am going to take the median flow from the WUA and we can modify if needed. 
 # 
-# thirty_day_mean_exceedence <- existing_cfs_median_comparison_point("floodplain rearing", 
-#                                                                    "Battle Creek", "wr", 
-#                                                                    "action_5")
+thirty_day_mean_exceedence <- existing_cfs_median_comparison_point("floodplain rearing",
+                                                                   "Battle Creek", "wr",
+                                                                   "action_5")
 # set_habitat <- DSMhabitat::set_floodplain_habitat(watershed, species, thirty_day_mean_exceedence)
 
 median_flow <- median(DSMhabitat::battle_creek_floodplain$flow_cfs)
@@ -40,3 +40,8 @@ add_project_habitat <- DSMhabitat::wr_fp$action_5["Battle Creek" , , ] * prop_ad
 updated_habitat <- DSMhabitat::wr_fp$action_5["Battle Creek", , ] + add_project_habitat
 
 action_5_fp_wr["Battle Creek", , ] <- updated_habitat 
+
+
+# Update to Include North Fork --------------------------------------------
+total_length_miles = 18.5
+
