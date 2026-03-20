@@ -59,7 +59,7 @@
 #'   \item Cosumnes River
 #'   \item Mokelumne River*
 #' }
-set_spawning_habitat <- function(watershed, species, flow, ...) {
+set_spawning_habitat <- function(watershed, species, flow, scenario, ...) {
   
   species_present <- all(subset(DSMhabitat::watershed_species_present, 
                                 watershed_name == watershed,
@@ -124,7 +124,8 @@ set_spawning_habitat <- function(watershed, species, flow, ...) {
     if (quantification_mode == "wua") {
       wua <- hab_func(flow)
       habitat_area <- wua_to_area(wua = wua, watershed = watershed,
-                                  life_stage = "spawning", species_name = species)
+                                  life_stage = "spawning", species_name = species,
+                                  scenario = scenario)
       
     } else if (quantification_mode == "hsi") {
       habitat_area <- hab_func(flow)
@@ -181,7 +182,8 @@ set_upper_sac_spawn_habitat <- function(species, flow, month) {
   }
 
   habitat_area <- wua_to_area(wua = wua, watershed = 'Upper Sacramento River',
-                              life_stage = "spawning", species_name = species)
+                              life_stage = "spawning", species_name = species, 
+                              scenario = scenario)
 
   return(habitat_area)
 }

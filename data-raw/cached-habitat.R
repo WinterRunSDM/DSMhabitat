@@ -40,7 +40,7 @@ get_flow <- function(watershed, calsim_version, years = c(1980, 1999)) {
 }
 
 # get rearing habitat for all watersheds 
-get_rear_hab_all <- function(watersheds, species, life_stage, calsim_version, years = 1980:1999) {
+get_rear_hab_all <- function(watersheds, species, life_stage, calsim_version, years = 1980:1999, scenario) {
   total_obs <- 12 * length(years)
   most <- map_df(watersheds, function(watershed) {
     flows <- get_flow(watershed, calsim_version, range(years))
@@ -79,7 +79,8 @@ get_rear_hab_all <- function(watersheds, species, life_stage, calsim_version, ye
       habitat <- DSMhabitat::set_instream_habitat(watershed,
                                                   species = species,
                                                   life_stage = life_stage,
-                                                  flow = flows)
+                                                  flow = flows, 
+                                                  scenario = scenario)
   
       tibble(
         year = rep(years, each = 12),
@@ -136,14 +137,15 @@ get_rear_hab_all <- function(watersheds, species, life_stage, calsim_version, ye
 }
 
 # get spawning habitat for all watersheds
-get_spawn_hab_all <- function(watersheds, species, calsim_version, years = 1979:2000) {
+get_spawn_hab_all <- function(watersheds, species, calsim_version, years = 1979:2000, scenario) {
   total_obs <- 12 * length(years)
   most <- map_df(watersheds, function(watershed) {
     flows <- get_flow(watershed, calsim_version, years=range(years))
     
         habitat <- DSMhabitat::set_spawning_habitat(watershed,
                                                     species = species,
-                                                    flow = flows)
+                                                    flow = flows, 
+                                                    scenario)
         
         tibble(
           year = rep(years, each = 12),
@@ -675,13 +677,15 @@ generate_wr_fry_or_juv <- function(calsim_version, lifestage = c("fry", "juv")) 
                                                     life_stage = lifestage,
                                                     flow = get_flow('Upper Sacramento River',
                                                                     calsim_version, 
-                                                                    years = c(1980, 2000)))
+                                                                    years = c(1980, 2000)),
+                                                    scenario = NULL)
   wr_hab['Upper-mid Sacramento River', , ] <- DSMhabitat::set_instream_habitat('Upper-mid Sacramento River',
                                                      species = 'wr',
                                                      life_stage = lifestage,
                                                      flow = get_flow('Upper-mid Sacramento River',
                                                                      calsim_version, 
-                                                                     years = c(1980, 2000)))
+                                                                     years = c(1980, 2000)),
+                                                     scenario = NULL)
   # deal with sacramento special cases
   # lower-mid sac
   # low_mid_sac_flow1 <- get_flow('Lower-mid Sacramento River1', calsim_version, years = c(1980, 2000))
@@ -702,7 +706,8 @@ generate_wr_fry_or_juv <- function(calsim_version, lifestage = c("fry", "juv")) 
                                                      life_stage = lifestage,
                                                      flow = get_flow('Lower Sacramento River',
                                                                      calsim_version, 
-                                                                     years = c(1980, 2000)))
+                                                                     years = c(1980, 2000)),
+                                                     scenario = NULL)
   
   
   wr_hab['Battle Creek', , ] <- DSMhabitat::set_instream_habitat('Battle Creek',
@@ -710,7 +715,8 @@ generate_wr_fry_or_juv <- function(calsim_version, lifestage = c("fry", "juv")) 
                                                     life_stage = lifestage,
                                                     flow = get_flow('Battle Creek',
                                                                     calsim_version, 
-                                                                    years = c(1980, 2000)))
+                                                                    years = c(1980, 2000)), 
+                                                    scenario = "bc_2")
   
   
   wr_hab[which(is.na(wr_hab))] <- 0
