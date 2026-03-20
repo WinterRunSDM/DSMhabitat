@@ -59,7 +59,7 @@
 #'   \item Cosumnes River
 #'   \item Mokelumne River*
 #' }
-set_spawning_habitat <- function(watershed, species, flow, scenario, ...) {
+set_spawning_habitat <- function(watershed, species, flow, scenario_option = NULL, ...) {
   
   species_present <- all(subset(DSMhabitat::watershed_species_present, 
                                 watershed_name == watershed,
@@ -125,10 +125,10 @@ set_spawning_habitat <- function(watershed, species, flow, scenario, ...) {
       wua <- hab_func(flow)
       habitat_area <- wua_to_area(wua = wua, watershed = watershed,
                                   life_stage = "spawning", species_name = species,
-                                  scenario = scenario)
+                                  scenario_option)
       
     } else if (quantification_mode == "hsi") {
-      habitat_area <- hab_func(flow)
+      habitat_area <- hab_fset_upper_sac_spawn_habitatunc(flow)
     }
     
   }
@@ -137,7 +137,7 @@ set_spawning_habitat <- function(watershed, species, flow, scenario, ...) {
 
 }
 
-set_upper_sac_spawn_habitat <- function(species, flow, month) {
+set_upper_sac_spawn_habitat <- function(species, flow, month, scenario_option = NULL) {
   # this is composed of two different curves, the first is the board in and second is boards out
   # board IN months 4-10
   # board OUT months 1-3, 11-12
@@ -183,7 +183,7 @@ set_upper_sac_spawn_habitat <- function(species, flow, month) {
 
   habitat_area <- wua_to_area(wua = wua, watershed = 'Upper Sacramento River',
                               life_stage = "spawning", species_name = species, 
-                              scenario = scenario)
+                              scenario_option)
 
   return(habitat_area)
 }
