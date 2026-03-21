@@ -199,7 +199,7 @@ get_spawn_hab_all <- function(watersheds, species, calsim_version, years = 1979:
 }
 
 # gets floodplain habitat for all watersheds 
-get_floodplain_hab_all <- function(watersheds, species, calsim_version, years = 1980:1999) {
+get_floodplain_hab_all <- function(watersheds, species, calsim_version, years = 1980:1999, scenario = NULL) {
   total_obs <- 12 * length(years)
   most <- map_df(watersheds, function(watershed) {
     flows <- get_flow(watershed, calsim_version, range(years))
@@ -226,8 +226,7 @@ get_floodplain_hab_all <- function(watersheds, species, calsim_version, years = 
       )
       
     } else {
-    
-    habitat <- DSMhabitat::set_floodplain_habitat(watershed, species, flows)
+    habitat <- DSMhabitat::set_floodplain_habitat(watershed, species, flows, scenario_option = scenario)
     
     modeling_in_suitable_area <- c("Antelope Creek", "Battle Creek", "Bear Creek", 
                                    "Cow Creek", "Mill Creek", "Paynes Creek", 
@@ -1006,14 +1005,21 @@ dimnames(fr_fp_run_of_river) <- list(watersheds, month.abb, 1980:2000)
 fr_fp_run_of_river[which(is.na(fr_fp_run_of_river))] <- 0
 
 # fr floodplain action 5
-fr_fp_action_5 <- get_floodplain_hab_all(watersheds_fp, 'fr', 'action_5', 1980:2000)
+fr_fp_action_5 <- get_floodplain_hab_all(watersheds_fp, 'fr', 'action_5', 1980:2000, scenario = NULL)
 dimnames(fr_fp_action_5) <- list(watersheds, month.abb, 1980:2000)
 fr_fp_action_5[which(is.na(fr_fp_action_5))] <- 0
+
+# fr floodplain action 5 bc 2
+fr_fp_action_5_bc_2 <- get_floodplain_hab_all(watersheds_fp, 'fr', 'action_5', 1980:2000, scenario = "bc_2")
+dimnames(fr_fp_action_5_bc_2) <- list(watersheds, month.abb, 1980:2000)
+fr_fp_action_5_bc_2[which(is.na(fr_fp_action_5_bc_2))] <- 0
+
 
 fr_fp <- list(biop_2008_2009 = fr_fp_2008_2009,
               biop_itp_2018_2019 = fr_fp_2018_2019,
               run_of_river = fr_fp_run_of_river,
-              action_5 = fr_fp_action_5)
+              action_5 = fr_fp_action_5,
+              action_5_bc_2 = fr_fp_action_5_bc_2)
 # because this is the first script run in update_data.R, we don't need it to be a modify List
 # fr_fp <- modifyList(DSMhabitat::fr_fp, list(biop_2008_2009 = fr_fp_2008_2009,
 #                                             biop_itp_2018_2019 = fr_fp_2018_2019,
@@ -1096,9 +1102,11 @@ generate_wr_floodplain <- function(calsim_version) {
   if(calsim_version == "LTO_12a") {
     calsim_version_tmp = tolower(calsim_version)
     wr_fp <- fr_fp[[calsim_version_tmp]]
+  } else if (calsim_version == "action_5_bc_2") {
+    wr_fp <- fr_fp[['action_5_bc_2']] 
+    calsim_version = "action_5"
   } else {
     wr_fp <- fr_fp[[calsim_version]] # Set default values to fall run to allow for straying
-    
   }
   
   wr_fp['Upper Sacramento River', , ] <- DSMhabitat::set_floodplain_habitat('Upper Sacramento River', 'wr',
@@ -1115,9 +1123,9 @@ generate_wr_floodplain <- function(calsim_version) {
                                                              years = c(1980, 2000)))
   
   # lower-mid sacramento
-  if(calsim_version == "action_5") {
+  if(calsim_version %in% c("action_5", "action_5_bc_2")) {
     low_mid_sac_flows_action_5 <- get_flow("Lower-mid Sacramento River",
-                                           calsim_version,
+                                           "action_5",
                                            years = c(1980, 2000))
     low_mid_sac_fp <- DSMhabitat::set_floodplain_habitat('Lower-mid Sacramento River', 'wr',
                                                          low_mid_sac_flows_action_5)
@@ -1138,13 +1146,15 @@ wr_fp_2008_2009 <- generate_wr_floodplain("biop_2008_2009")
 wr_fp_2018_2019 <- generate_wr_floodplain("biop_itp_2018_2019")
 wr_fp_run_of_river <- generate_wr_floodplain("run_of_river")
 wr_fp_action_5 <- generate_wr_floodplain("action_5")
+wr_fp_action_5_bc_2 <- generate_wr_floodplain("action_5_bc_2")
 
 
 # combine 
 wr_fp <- list(biop_2008_2009 = wr_fp_2008_2009,
               biop_itp_2018_2019 = wr_fp_2018_2019,
               run_of_river = wr_fp_run_of_river,
-              action_5 = wr_fp_action_5)
+              action_5 = wr_fp_action_5,
+              action_5_bc_2 = wr_fp_action_5_bc_2)
 # because this is the first script run in update_data.R, we don't need it to be a modify List
 # wr_fp <- modifyList(DSMhabitat::wr_fp, list(biop_2008_2009 = wr_fp_2008_2009,
 #                                         biop_itp_2018_2019 = wr_fp_2018_2019,
