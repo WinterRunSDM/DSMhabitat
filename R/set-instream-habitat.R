@@ -66,7 +66,7 @@
 #' # Juvenile rearing habitat value in square meters for Fall Run in Elder Creek at 300 cfs.
 #' set_instream_habitat('Elder Creek', 'fr', 'juv', 300) # no habitat modeling exists, composite used
 #' @export
-set_instream_habitat <- function(watershed, species, life_stage, flow, ...) {
+set_instream_habitat <- function(watershed, species, life_stage, flow, scenario_option = NULL, ...) {
   
   species_present <- subset(DSMhabitat::watershed_species_present, watershed_name == watershed,
                             species, drop = TRUE)
@@ -104,7 +104,7 @@ set_instream_habitat <- function(watershed, species, life_stage, flow, ...) {
   if (quantification_mode == "wua") {
     wua <- hab_func(flow)
     habitat_area <- wua_to_area(wua = wua, watershed = watershed,
-                                life_stage = "rearing", species_name = species)
+                                life_stage = "rearing", species_name = species, scenario_option)
   } else {
     habitat_area <- hab_func(flow)
   }

@@ -4,12 +4,20 @@
 \alias{wua_to_area}
 \title{WUA to Area in Square Meters}
 \usage{
-wua_to_area(wua, watershed_name, life_stage, species_name)
+wua_to_area(
+  wua,
+  watershed_name,
+  life_stage,
+  species_name,
+  scenario_option = NULL
+)
 }
 \arguments{
 \item{wua}{WUA in square feet per 1000 feet}
 
 \item{life_stage}{life stage}
+
+\item{scenario_option}{this is specific to Shasta SDM where different watershed lengths need to be applied for Battle Creek}
 
 \item{watershed}{watershed}
 
