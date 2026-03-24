@@ -271,3 +271,15 @@ fry <- plot_compare_month_year_matrix(
 )
 
 fry$plot
+
+# floodplain: 
+fp <- plot_compare_month_year_matrix(
+  x1 = wr_fp$action_5_bc_2["Battle Creek", , ],
+  x2 = wr_fp$action_5["Battle Creek", , ],
+  name1 = "Action 5 BC 2",
+  name2 = "Action 5",
+  value_name = "area",
+  title = "Battle Creek - BC-2 floodplain"
+)
+
+fp$plot
