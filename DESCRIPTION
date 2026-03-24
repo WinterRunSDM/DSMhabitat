@@ -16,7 +16,7 @@ LazyData: true
 Suggests: testthat,
     knitr,
     rmarkdown
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 VignetteBuilder: knitr
 URL: https://reorienting-to-recovery.github.io/DSMhabitat/
 BugReports: https://github.com/reorienting-to-recovery/DSMhabitat/issues

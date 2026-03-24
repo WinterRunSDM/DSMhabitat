@@ -4,7 +4,13 @@
 \alias{set_floodplain_habitat}
 \title{Set Floodplain Habitat Area}
 \usage{
-set_floodplain_habitat(watershed, species, flow, flow2 = NULL)
+set_floodplain_habitat(
+  watershed,
+  species,
+  flow,
+  flow2 = NULL,
+  scenario_option = NULL
+)
 }
 \arguments{
 \item{watershed}{a watershed defined for the SIT model}
