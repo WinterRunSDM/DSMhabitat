@@ -128,7 +128,7 @@ set_spawning_habitat <- function(watershed, species, flow, scenario_option = NUL
                                   scenario_option)
       
     } else if (quantification_mode == "hsi") {
-      habitat_area <- hab_fset_upper_sac_spawn_habitatunc(flow)
+      habitat_area <- hab_func(flow)
     }
     
   }

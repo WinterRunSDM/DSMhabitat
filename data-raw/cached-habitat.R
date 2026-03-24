@@ -40,7 +40,7 @@ get_flow <- function(watershed, calsim_version, years = c(1980, 1999)) {
 }
 
 # get rearing habitat for all watersheds 
-get_rear_hab_all <- function(watersheds, species, life_stage, calsim_version, years = 1980:1999, scenario) {
+get_rear_hab_all <- function(watersheds, species, life_stage, calsim_version, years = 1980:1999, scenario = NULL) {
   total_obs <- 12 * length(years)
   most <- map_df(watersheds, function(watershed) {
     flows <- get_flow(watershed, calsim_version, range(years))
@@ -137,7 +137,7 @@ get_rear_hab_all <- function(watersheds, species, life_stage, calsim_version, ye
 }
 
 # get spawning habitat for all watersheds
-get_spawn_hab_all <- function(watersheds, species, calsim_version, years = 1979:2000, scenario) {
+get_spawn_hab_all <- function(watersheds, species, calsim_version, years = 1979:2000, scenario = NULL) {
   total_obs <- 12 * length(years)
   most <- map_df(watersheds, function(watershed) {
     flows <- get_flow(watershed, calsim_version, years=range(years))
