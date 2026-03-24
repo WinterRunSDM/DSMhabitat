@@ -68,11 +68,6 @@ existing_cfs_median_comparison_point <- function (habitat_type, watershed, speci
   }
 }
 
-library(dplyr)
-library(tidyr)
-library(tibble)
-library(ggplot2)
-
 plot_compare_month_year_matrix <- function(x1,
                                            x2,
                                            name1 = "Scenario 1",
@@ -283,3 +278,40 @@ fp <- plot_compare_month_year_matrix(
 )
 
 fp$plot
+
+
+# BC-2 + BC-5 -------------------------------------------------------------
+spawn <- plot_compare_month_year_matrix(
+  x1 = wr_spawn$action_5_bc_2["Battle Creek", , ],
+  x2 = wr_spawn$action_5_bc_5["Battle Creek", , ],
+  name1 = "Action 5 BC 2",
+  name2 = "Action 5 BC 5",
+  value_name = "area",
+  title = "Battle Creek - spawning"
+)
+
+spawn$plot
+
+juv <- plot_compare_month_year_matrix(
+  x1 = wr_juv$action_5_bc_2["Battle Creek", , ],
+  x2 = wr_juv$action_5_bc_5["Battle Creek", , ],
+  name1 = "Action 5 BC 2",
+  name2 = "Action 5 BC 5",
+  value_name = "area",
+  title = "Battle Creek - instream juv rearing"
+)
+
+juv$plot
+
+fry <- plot_compare_month_year_matrix(
+  x1 = wr_fry$action_5_bc_2["Battle Creek", , ],
+  x2 = wr_fry$action_5_bc_5["Battle Creek", , ],
+  name1 = "Action 5 BC 2",
+  name2 = "Action 5 BC 5",
+  value_name = "area",
+  title = "Battle Creek - instream fry rearing"
+)
+
+fry$plot
+
+
