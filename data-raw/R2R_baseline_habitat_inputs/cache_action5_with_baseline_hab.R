@@ -43,33 +43,33 @@ fr_spawn <- modifyList(DSMhabitat::fr_spawn, list("action_5_baseline" = action_5
 usethis::use_data(fr_spawn, overwrite = TRUE)
 
 # Exploratory plot 
-r_to_r_baseline_action_5 <- action_5_baseline_fr_spawn |> 
-  DSMhabitat::square_meters_to_acres()
-
-baseline <- DSMhabitat::fr_spawn$r_to_r_baseline |> DSMhabitat::square_meters_to_acres()
-
-spawn <- expand_grid(
-  watershed = factor(DSMscenario::watershed_labels, 
-                     levels = DSMscenario::watershed_labels),
-  month = 1:12,
-  year = 1979:2000) |> 
-  arrange(year, month, watershed) |> 
-  mutate(
-    r_to_r_baseline = as.vector(baseline),
-    r_to_r_baseline_action_5 = as.vector(r_to_r_baseline_action_5)) |> 
-  filter(watershed %in% c("American River", 
-                          "Upper Sacramento River", 
-                          "Paynes Creek", 
-                          "Clear Creek"))
-
-spawn |> 
-  transmute(watershed, date = ymd(paste(year, month, 1)), 
-            r_to_r_baseline, r_to_r_baseline_action_5) |> 
-  gather(version, acres, -watershed, -date)  |> 
-  ggplot(aes(date, acres, color = version)) +
-  geom_line(alpha = .75) + 
-  facet_wrap(~watershed, scales = 'free_y') + 
-  theme_minimal()
+# r_to_r_baseline_action_5 <- action_5_baseline_fr_spawn |> 
+#   DSMhabitat::square_meters_to_acres()
+# 
+# baseline <- DSMhabitat::fr_spawn$r_to_r_baseline |> DSMhabitat::square_meters_to_acres()
+# 
+# spawn <- expand_grid(
+#   watershed = factor(DSMscenario::watershed_labels, 
+#                      levels = DSMscenario::watershed_labels),
+#   month = 1:12,
+#   year = 1979:2000) |> 
+#   arrange(year, month, watershed) |> 
+#   mutate(
+#     r_to_r_baseline = as.vector(baseline),
+#     r_to_r_baseline_action_5 = as.vector(r_to_r_baseline_action_5)) |> 
+#   filter(watershed %in% c("American River", 
+#                           "Upper Sacramento River", 
+#                           "Paynes Creek", 
+#                           "Clear Creek"))
+# 
+# spawn |> 
+#   transmute(watershed, date = ymd(paste(year, month, 1)), 
+#             r_to_r_baseline, r_to_r_baseline_action_5) |> 
+#   gather(version, acres, -watershed, -date)  |> 
+#   ggplot(aes(date, acres, color = version)) +
+#   geom_line(alpha = .75) + 
+#   facet_wrap(~watershed, scales = 'free_y') + 
+#   theme_minimal()
 
 
 
