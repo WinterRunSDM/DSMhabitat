@@ -26,7 +26,7 @@
 #'
 #'
 #' @export
-set_floodplain_habitat <- function(watershed, species, flow, flow2 = NULL) {
+set_floodplain_habitat <- function(watershed, species, flow, flow2 = NULL, scenario_option = NULL) {
 
   species_present <- subset(DSMhabitat::watershed_species_present, watershed_name == watershed,
                             species, drop = TRUE)
@@ -41,6 +41,7 @@ set_floodplain_habitat <- function(watershed, species, flow, flow2 = NULL) {
     watershed_rda_name <- paste(watershed_name, "floodplain", sep = "_")
 
     df <- do.call(`::`, list(pkg = "DSMhabitat", name = watershed_rda_name))
+    
     fp_approx <- approxfun(df$flow_cfs, df$floodplain_sq_meters, yleft = 0, yright = max(df$floodplain_sq_meters))
 
     if (watershed == 'Lower-mid Sacramento River') {
@@ -55,19 +56,33 @@ set_floodplain_habitat <- function(watershed, species, flow, flow2 = NULL) {
     }
 
   } else {
-    acres <- floodplain_approx(watershed, species)(flow)
+    acres <- floodplain_approx(watershed, species, scenario_option)(flow)
 
     return(acres_to_square_meters(acres))}
 
 }
 
 
-floodplain_approx <- function(watershed, species) {
+floodplain_approx <- function(watershed, species, scenario_option) {
   # format watershed name to load flow to area relationship for floodplain
   watershed_name <- tolower(gsub(pattern = " |-", replacement = "_", x = watershed))
   watershed_rda_name <- paste(watershed_name, "floodplain", sep = "_")
 
   df <- do.call(`::`, list(pkg = "DSMhabitat", name = watershed_rda_name))
+  
+  if(!is.null(scenario_option) && watershed_name == "battle_creek") {
+    # see data-raw/battle_creek_habitat/cache_battle_creek_habitat.R for methodology
+    df <- df |> 
+      add_row(tibble_row(flow_cfs = 550.45, 
+                         WR_floodplain_acres = 112.545,
+                         FR_floodplain_acres = 112.545,
+                         watershed = "Battle Creek")) |> 
+      mutate(across(where(is.numeric), ~replace_na(.x, 0))) |> 
+      arrange(flow_cfs)
+    
+    message("modified battle_creek_floodplain")
+    print(head(battle_creek_floodplain))
+  }
 
 
   switch(species,
