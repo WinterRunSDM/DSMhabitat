@@ -279,6 +279,11 @@ fp <- plot_compare_month_year_matrix(
 
 fp$plot
 
+# MW: the instream and spawning median action 5 flow for battle creek is very high so we are going to scale f
+# rom the median WUA flow instead 
+# instream_flow <- existing_cfs_median_comparison_point("inchannel rearing",
+#                                                       "Battle Creek", "wr",
+#                                                       "action_5") # 672.2546
 
 # BC-2 + BC-5 -------------------------------------------------------------
 spawn <- plot_compare_month_year_matrix(
@@ -313,5 +318,47 @@ fry <- plot_compare_month_year_matrix(
 )
 
 fry$plot
+
+# BC-2 + BC-5 -------------------------------------------------------------
+spawn <- plot_compare_month_year_matrix(
+  x1 = wr_spawn$action_5_bc_2["Battle Creek", , ],
+  x2 = wr_spawn$action_5_bc_5["Battle Creek", , ],
+  name1 = "Action 5 BC 2",
+  name2 = "Action 5 BC 5",
+  value_name = "area",
+  title = "Battle Creek - spawning"
+)
+
+spawn$plot
+
+juv <- plot_compare_month_year_matrix(
+  x1 = wr_juv$action_5_bc_2["Battle Creek", , ],
+  x2 = wr_juv$action_5_bc_5["Battle Creek", , ],
+  name1 = "Action 5 BC 2",
+  name2 = "Action 5 BC 5",
+  value_name = "area",
+  title = "Battle Creek - instream juv rearing"
+)
+
+juv$plot
+
+fry <- plot_compare_month_year_matrix(
+  x1 = wr_fry$action_5_bc_2["Battle Creek", , ],
+  x2 = wr_fry$action_5_bc_5["Battle Creek", , ],
+  name1 = "Action 5 BC 2",
+  name2 = "Action 5 BC 5",
+  value_name = "area",
+  title = "Battle Creek - instream fry rearing"
+)
+
+fry$plot
+
+# Method: 
+#(DSMhabitat::wr_fry$action_5_bc_2 -  DSMhabitat::wr_fry$action_5) + 
+# (DSMhabitat::wr_fry$action_5_bc_5 - DSMhabitat::wr_fry$action_5) + DSMhabitat::wr_fry$action_5
+
+wr_fry_action_5_bc_2_bc_5 <- (DSMhabitat::wr_fry$action_5_bc_2['Battle Creek',,] -  DSMhabitat::wr_fry$action_5['Battle Creek',,]) + 
+  (DSMhabitat::wr_fry$action_5_bc_5 - DSMhabitat::wr_fry$action_5) 
+
 
 

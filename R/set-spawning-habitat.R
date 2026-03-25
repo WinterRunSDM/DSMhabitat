@@ -83,7 +83,7 @@ set_spawning_habitat <- function(watershed, species, flow, scenario_option = NUL
                                 spawning, drop = TRUE)
 
   if (watershed == 'Upper Sacramento River') {
-    return(set_upper_sac_spawn_habitat(species, flow, ...))
+    return(set_upper_sac_spawn_habitat(species, flow, scenario_option, ...))
   }
   
   # TDOO --- needs improvement!!

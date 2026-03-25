@@ -103,7 +103,7 @@ all_existing_and_tmh_data_fun <- function(species, area, extent) {
 }
 
 ## spawning ----------------------------------------------------------------
-spawn_tmh_processing <- function(watersheds, species, calsim_run, area, extent) {
+spawn_tmh_processing <- function(watersheds, species, calsim_run, area = "Standard", extent = 0) {
   
   all_existing_and_tmh_data <- all_existing_and_tmh_data_fun(species, area, extent)
   
@@ -145,7 +145,7 @@ spawn_tmh_processing <- function(watersheds, species, calsim_run, area, extent) 
 }
 
 ## In channel and Fry Rearing ----------------------------------------------------------------
-rearing_tmh_processing <- function(watersheds, species, calsim_run, area, extent) {
+rearing_tmh_processing <- function(watersheds, species, calsim_run, area = "Standard", extent = 0) {
   
   all_existing_and_tmh_data <- all_existing_and_tmh_data_fun(species, area, extent)
   
@@ -194,7 +194,7 @@ rearing_tmh_processing <- function(watersheds, species, calsim_run, area, extent
 }
 
 ## floodplain  ----------------------------------------------------------------
-floodplain_tmh_processing <- function(watersheds, species, calsim_run, area, extent) {
+floodplain_tmh_processing <- function(watersheds, species, calsim_run, area = "Standard", extent = 0) {
   
   all_existing_and_tmh_data <- all_existing_and_tmh_data_fun(species, area, extent)
   
@@ -355,7 +355,7 @@ existing_flow_cfs <- function(habitat_type, watershed_input, bypass = FALSE, spe
     }
   } else if(habitat_type == "flood") {
     # TODO: this is a hacky fix, unsure about it... MW 3/4/26
-    if(watershed_input %in% c("Lower-mid Sacramento River1", "Lower-mid Sacramento River2")) {watershed_input <- "Lower-mid Sacramento River"}
+    if(str_detect(calsim_run, "action_5") & watershed_input %in% c("Lower-mid Sacramento River1", "Lower-mid Sacramento River2")) {watershed_input <- "Lower-mid Sacramento River"}
     flood = flow_df |> 
       filter(date >= as_date("1980-01-01")) |> 
       select(watershed_input, date) |> 
@@ -454,85 +454,85 @@ existing_acres_fun <- function(watershed_input, habitat_type, selected_species, 
 }
 
 # TMH Plots: 
-tmh_comparison_plot <- function(
-    tmh_data,
-    baseline,
-    hab_type,
-    legend_labels = c(
-      baseline = "Baseline",
-      r_to_r_max_habitat = "R2R max habitat"
-    ),
-    legend_colors = NULL,
-    title = NULL
-) {
-  
-  year <- switch(
-    hab_type,
-    "spawn" = 1979:2000,
-    "juv"   = 1980:2000,
-    "fry"   = 1980:2000,
-    "flood" = 1980:2000,
-    stop("hab_type must be one of: spawn, juv, fry, flood")
-  )
-  
-  r_to_r_max_habitat <- tmh_data |>
-    DSMhabitat::square_meters_to_acres()
-  
-  baseline <- baseline |>
-    DSMhabitat::square_meters_to_acres()
-  
-  plot_df <- tidyr::expand_grid(
-    watershed = factor(
-      DSMscenario::watershed_labels,
-      levels = DSMscenario::watershed_labels
-    ),
-    month = 1:12,
-    year = year
-  ) |>
-    arrange(year, month, watershed) |>
-    mutate(
-      baseline = as.vector(baseline),
-      r_to_r_max_habitat = as.vector(r_to_r_max_habitat)
-    ) |>
-    transmute(
-      watershed,
-      date = lubridate::ymd(paste(year, month, 1)),
-      baseline,
-      r_to_r_max_habitat
-    ) |>
-    tidyr::pivot_longer(
-      cols = c(baseline, r_to_r_max_habitat),
-      names_to = "version",
-      values_to = "acres"
-    )
-  
-  # Keep legend order controlled by legend_labels
-  plot_df <- plot_df |>
-    mutate(version = factor(version, levels = names(legend_labels)))
-  
-  p <- ggplot(plot_df, aes(date, acres, color = version)) +
-    geom_line(alpha = 0.75) +
-    facet_wrap(~watershed, scales = "free_y") +
-    theme_minimal() +
-    labs(title = title, color = NULL) +  
-    theme(
-      legend.position = "top"
-    )
-  
-  # Apply labels (and optional colors)
-  if (!is.null(legend_colors)) {
-    p <- p + scale_color_manual(
-      breaks = names(legend_labels),
-      labels = unname(legend_labels),
-      values = legend_colors
-    )
-  } else {
-    p <- p + scale_color_discrete(
-      breaks = names(legend_labels),
-      labels = unname(legend_labels)
-    )
-  }
-  
-  p
-}
+# tmh_comparison_plot <- function(
+#     tmh_data,
+#     baseline,
+#     hab_type,
+#     legend_labels = c(
+#       baseline = "Baseline",
+#       r_to_r_max_habitat = "R2R max habitat"
+#     ),
+#     legend_colors = NULL,
+#     title = NULL
+# ) {
+#   
+#   year <- switch(
+#     hab_type,
+#     "spawn" = 1979:2000,
+#     "juv"   = 1980:2000,
+#     "fry"   = 1980:2000,
+#     "flood" = 1980:2000,
+#     stop("hab_type must be one of: spawn, juv, fry, flood")
+#   )
+#   
+#   r_to_r_max_habitat <- tmh_data |>
+#     DSMhabitat::square_meters_to_acres()
+#   
+#   baseline <- baseline |>
+#     DSMhabitat::square_meters_to_acres()
+#   
+#   plot_df <- tidyr::expand_grid(
+#     watershed = factor(
+#       DSMscenario::watershed_labels,
+#       levels = DSMscenario::watershed_labels
+#     ),
+#     month = 1:12,
+#     year = year
+#   ) |>
+#     arrange(year, month, watershed) |>
+#     mutate(
+#       baseline = as.vector(baseline),
+#       r_to_r_max_habitat = as.vector(r_to_r_max_habitat)
+#     ) |>
+#     transmute(
+#       watershed,
+#       date = lubridate::ymd(paste(year, month, 1)),
+#       baseline,
+#       r_to_r_max_habitat
+#     ) |>
+#     tidyr::pivot_longer(
+#       cols = c(baseline, r_to_r_max_habitat),
+#       names_to = "version",
+#       values_to = "acres"
+#     )
+#   
+#   # Keep legend order controlled by legend_labels
+#   plot_df <- plot_df |>
+#     mutate(version = factor(version, levels = names(legend_labels)))
+#   
+#   p <- ggplot(plot_df, aes(date, acres, color = version)) +
+#     geom_line(alpha = 0.75) +
+#     facet_wrap(~watershed, scales = "free_y") +
+#     theme_minimal() +
+#     labs(title = title, color = NULL) +  
+#     theme(
+#       legend.position = "top"
+#     )
+#   
+#   # Apply labels (and optional colors)
+#   if (!is.null(legend_colors)) {
+#     p <- p + scale_color_manual(
+#       breaks = names(legend_labels),
+#       labels = unname(legend_labels),
+#       values = legend_colors
+#     )
+#   } else {
+#     p <- p + scale_color_discrete(
+#       breaks = names(legend_labels),
+#       labels = unname(legend_labels)
+#     )
+#   }
+#   
+#   p
+# }
 
