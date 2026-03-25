@@ -1,5 +1,6 @@
 library(tidyr)
 library(dplyr)
+library(tibble)
 library(purrr)
 library(lubridate)
 library(DSMhabitat)
@@ -292,22 +293,22 @@ spawning_watersheds <- DSMhabitat::watershed_species_present %>%
 
 # fall run spawning habitat --
 # fr spawn 2008 2009 
-fr_spawn_2008_2009 <- get_spawn_hab_all(spawning_watersheds, 'fr', "biop_2008_2009")
+fr_spawn_2008_2009 <- get_spawn_hab_all(spawning_watersheds, 'fr', "biop_2008_2009", scenario = NULL)
 dimnames(fr_spawn_2008_2009) <- list(watersheds, month.abb, 1979:2000)
 fr_spawn_2008_2009[which(is.na(fr_spawn_2008_2009))] <- 0
 
 # fr spawn 2018 2019 
-fr_spawn_2018_2019 <- get_spawn_hab_all(spawning_watersheds, 'fr', "biop_itp_2018_2019")
+fr_spawn_2018_2019 <- get_spawn_hab_all(spawning_watersheds, 'fr', "biop_itp_2018_2019", scenario = NULL)
 dimnames(fr_spawn_2018_2019) <- list(watersheds, month.abb, 1979:2000)
 fr_spawn_2018_2019[which(is.na(fr_spawn_2018_2019))] <- 0
 
 # fr spawn run of river
-fr_spawn_run_of_river <- get_spawn_hab_all(spawning_watersheds, 'fr', "run_of_river")
+fr_spawn_run_of_river <- get_spawn_hab_all(spawning_watersheds, 'fr', "run_of_river", scenario = NULL)
 dimnames(fr_spawn_run_of_river) <- list(watersheds, month.abb, 1979:2000)
 fr_spawn_run_of_river[which(is.na(fr_spawn_run_of_river))] <- 0
 
 # fr spawn action 5
-fr_spawn_action_5 <- get_spawn_hab_all(spawning_watersheds, 'fr', "action_5")
+fr_spawn_action_5 <- get_spawn_hab_all(spawning_watersheds, 'fr', "action_5", scenario = NULL)
 dimnames(fr_spawn_action_5) <- list(watersheds, month.abb, 1979:2000)
 fr_spawn_action_5[which(is.na(fr_spawn_action_5))] <- 0
 
