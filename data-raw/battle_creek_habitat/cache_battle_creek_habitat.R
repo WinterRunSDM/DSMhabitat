@@ -70,8 +70,10 @@ existing_cfs_median_comparison_point <- function (habitat_type, watershed, speci
 
 plot_compare_month_year_matrix <- function(x1,
                                            x2,
+                                           x3 = NULL,
                                            name1 = "Scenario 1",
                                            name2 = "Scenario 2",
+                                           name3 = "Scenario 3",
                                            value_name = "value",
                                            title = NULL,
                                            x_lab = "Year",
@@ -106,7 +108,24 @@ plot_compare_month_year_matrix <- function(x1,
       dataset = name2
     )
   
-  df <- bind_rows(df1, df2)
+  if(!is.null(x3)) {
+    df3 <- as.data.frame(x3) |>
+      rownames_to_column(var = "month") |>
+      pivot_longer(
+        cols = -month,
+        names_to = "year",
+        values_to = value_name
+      ) |>
+      mutate(
+        year = as.integer(year),
+        month = factor(month, levels = month_levels, ordered = TRUE),
+        dataset = name3
+      )
+    df <- bind_rows(df1, df2, df3)
+  } else {
+    df <- bind_rows(df1, df2)
+  }
+  
   
   p <- ggplot(
     df,
@@ -319,46 +338,78 @@ fry <- plot_compare_month_year_matrix(
 
 fry$plot
 
-# BC-2 + BC-5 -------------------------------------------------------------
-spawn <- plot_compare_month_year_matrix(
-  x1 = wr_spawn$action_5_bc_2["Battle Creek", , ],
-  x2 = wr_spawn$action_5_bc_5["Battle Creek", , ],
-  name1 = "Action 5 BC 2",
-  name2 = "Action 5 BC 5",
-  value_name = "area",
-  title = "Battle Creek - spawning"
-)
+# BC-2 + BC-5 ------------------------------------------------------------
+# Method: 
+#(DSMhabitat::wr_fry$action_5_bc_2 -  DSMhabitat::wr_fry$action_5) + 
+# (DSMhabitat::wr_fry$action_5_bc_5 - DSMhabitat::wr_fry$action_5) + DSMhabitat::wr_fry$action_5
 
-spawn$plot
+# FRY: 
+wr_fry_copy <- DSMhabitat::wr_fry$action_5
+wr_fry_action_5_bc_2_bc_5 <- (DSMhabitat::wr_fry$action_5_bc_2['Battle Creek',,] -  DSMhabitat::wr_fry$action_5['Battle Creek',,]) + 
+  (DSMhabitat::wr_fry$action_5_bc_5['Battle Creek',,] - DSMhabitat::wr_fry$action_5['Battle Creek',,]) +
+  DSMhabitat::wr_fry$action_5["Battle Creek",,]
 
-juv <- plot_compare_month_year_matrix(
-  x1 = wr_juv$action_5_bc_2["Battle Creek", , ],
-  x2 = wr_juv$action_5_bc_5["Battle Creek", , ],
-  name1 = "Action 5 BC 2",
-  name2 = "Action 5 BC 5",
-  value_name = "area",
-  title = "Battle Creek - instream juv rearing"
-)
-
-juv$plot
+wr_fry_copy["Battle Creek", , ] <- wr_fry_action_5_bc_2_bc_5
+wr_fry <- modifyList(DSMhabitat::wr_fry, list("action_5_bc_2_bc_5" = wr_fry_copy))
+usethis::use_data(wr_fry, overwrite = TRUE)
 
 fry <- plot_compare_month_year_matrix(
   x1 = wr_fry$action_5_bc_2["Battle Creek", , ],
   x2 = wr_fry$action_5_bc_5["Battle Creek", , ],
+  x3 = wr_fry$action_5_bc_2_bc_5["Battle Creek", , ],
   name1 = "Action 5 BC 2",
   name2 = "Action 5 BC 5",
+  name3 = "Action 5 BC 5 BC 2",
   value_name = "area",
   title = "Battle Creek - instream fry rearing"
 )
 
 fry$plot
 
-# Method: 
-#(DSMhabitat::wr_fry$action_5_bc_2 -  DSMhabitat::wr_fry$action_5) + 
-# (DSMhabitat::wr_fry$action_5_bc_5 - DSMhabitat::wr_fry$action_5) + DSMhabitat::wr_fry$action_5
+# JUV
+wr_juv_copy <- DSMhabitat::wr_juv$action_5
+wr_juv_action_5_bc_2_bc_5 <- (DSMhabitat::wr_juv$action_5_bc_2['Battle Creek',,] -  DSMhabitat::wr_juv$action_5['Battle Creek',,]) + 
+  (DSMhabitat::wr_juv$action_5_bc_5['Battle Creek',,] - DSMhabitat::wr_juv$action_5['Battle Creek',,]) +
+  DSMhabitat::wr_juv$action_5["Battle Creek",,]
 
-wr_fry_action_5_bc_2_bc_5 <- (DSMhabitat::wr_fry$action_5_bc_2['Battle Creek',,] -  DSMhabitat::wr_fry$action_5['Battle Creek',,]) + 
-  (DSMhabitat::wr_fry$action_5_bc_5 - DSMhabitat::wr_fry$action_5) 
+wr_juv_copy["Battle Creek", , ] <- wr_juv_action_5_bc_2_bc_5
+wr_juv <- modifyList(DSMhabitat::wr_juv, list("action_5_bc_2_bc_5" = wr_juv_copy))
+usethis::use_data(wr_juv, overwrite = TRUE)
+
+juv <- plot_compare_month_year_matrix(
+  x1 = wr_juv$action_5_bc_2["Battle Creek", , ],
+  x2 = wr_juv$action_5_bc_5["Battle Creek", , ],
+  x3 = wr_juv$action_5_bc_2_bc_5["Battle Creek", , ],
+  name1 = "Action 5 BC 2",
+  name2 = "Action 5 BC 5",
+  name3 = "Action 5 BC 5 BC 2",
+  title = "Battle Creek - instream juv rearing"
+)
+
+juv$plot
 
 
+# SPAWN
+wr_spawn_copy <- DSMhabitat::wr_spawn$action_5
+wr_spawn_action_5_bc_2_bc_5 <- (DSMhabitat::wr_spawn$action_5_bc_2['Battle Creek',,] -  DSMhabitat::wr_spawn$action_5['Battle Creek',,]) + 
+  (DSMhabitat::wr_spawn$action_5_bc_5['Battle Creek',,] - DSMhabitat::wr_spawn$action_5['Battle Creek',,]) +
+  DSMhabitat::wr_spawn$action_5["Battle Creek",,]
 
+wr_spawn_copy["Battle Creek", , ] <- wr_spawn_action_5_bc_2_bc_5
+wr_spawn <- modifyList(DSMhabitat::wr_spawn, list("action_5_bc_2_bc_5" = wr_spawn_copy))
+usethis::use_data(wr_spawn, overwrite = TRUE)
+
+spawn <- plot_compare_month_year_matrix(
+  x1 = wr_spawn$action_5_bc_2["Battle Creek", , ],
+  x2 = wr_spawn$action_5_bc_5["Battle Creek", , ],
+  x3 = wr_spawn$action_5_bc_2_bc_5["Battle Creek", , ],
+  name1 = "Action 5 BC 2",
+  name2 = "Action 5 BC 5",
+  name3 = "Action 5 BC 5 BC 2",
+  value_name = "area",
+  title = "Battle Creek - instream spawning"
+)
+
+spawn$plot
+
+# 
