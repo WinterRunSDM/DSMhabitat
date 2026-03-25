@@ -9,7 +9,7 @@ set_instream_habitat(
   species,
   life_stage,
   flow,
-  scenario = NULL,
+  scenario_option = NULL,
   ...
 )
 }

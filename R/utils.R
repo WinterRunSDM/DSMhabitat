@@ -7,9 +7,9 @@
 #' @param watershed watershed
 #' @param species species, "fr" - fall run or "sr" - spring run or "st" - steel head or "lfr" - late fall run
 #' @param life_stage life stage
-#' @param scenario this is specific to Shasta SDM where different watershed lengths need to be applied for Battle Creek
-wua_to_area <- function(wua, watershed_name,  life_stage, species_name, scenario = NULL) {
-  if(!is.null(scenario)) {
+#' @param scenario_option this is specific to Shasta SDM where different watershed lengths need to be applied for Battle Creek
+wua_to_area <- function(wua, watershed_name,  life_stage, species_name, scenario_option = NULL) {
+  if(!is.null(scenario_option)) {
     # This is specific section for running scenarios in Shasta SDM; 
     # using the fall run lengths that do not include north fork for baseline and 
     # bc_5 scenario should include NF
@@ -23,10 +23,10 @@ wua_to_area <- function(wua, watershed_name,  life_stage, species_name, scenario
       dplyr::filter(watershed == watershed_name,
                     species == species_name,
                     lifestage == life_stage,
-                    scenario == scenario) |> 
+                    scenario == scenario_option) |>
       pull(feet)
     
-    print(paste0("applying scenario: ", scenario, " with ", stream_length, " feet "))
+    print(paste0("applying scenario: ", scenario_option, " with ", stream_length, " feet "))
     
   } else {
     stream_length <- dplyr::pull(dplyr::filter(DSMhabitat::watershed_lengths,
