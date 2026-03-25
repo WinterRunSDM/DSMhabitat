@@ -1,5 +1,6 @@
 library(tidyr)
 library(dplyr)
+library(tibble)
 library(purrr)
 library(lubridate)
 library(DSMhabitat)
@@ -226,10 +227,6 @@ get_floodplain_hab_all <- function(watersheds, species, calsim_version, years = 
       )
       
     } else {
-<<<<<<< HEAD
-
-=======
->>>>>>> ffebb461f92d0b033582a1a68db5d30afa01a615
     habitat <- DSMhabitat::set_floodplain_habitat(watershed, species, flows, scenario_option = scenario)
     
     modeling_in_suitable_area <- c("Antelope Creek", "Battle Creek", "Bear Creek", 
